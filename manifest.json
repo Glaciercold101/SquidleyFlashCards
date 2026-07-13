@@ -13,28 +13,28 @@
   ],
   "icons": [
     {
-      "purpose": "any",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "src": "/icons/icon-192.png",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "purpose": "any",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "src": "/icons/icon-512.png",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "purpose": "maskable",
+      "src": "./icons/icon-512-maskable.png",
       "sizes": "512x512",
-      "src": "/icons/icon-512-maskable.png",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "lang": "en",
   "name": "Flashcard Widget",
   "orientation": "any",
-  "scope": "/",
+  "scope": "./",
   "short_name": "Flashcards",
   "shortcuts": [
     {
@@ -48,6 +48,6 @@
       "url": "/?action=shuffle"
     }
   ],
-  "start_url": "/",
+  "start_url": "./",
   "theme_color": "#0c0a08"
 }

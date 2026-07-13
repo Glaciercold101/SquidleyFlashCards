@@ -6,7 +6,7 @@
 <title>Flashcard Widget</title>
 
 <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0c0a08">
 <meta name="background-color" content="#0c0a08">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,10 +15,10 @@
 <meta name="apple-mobile-web-app-title" content="Flashcards">
 <meta name="application-name" content="Flashcards">
 
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -218,6 +218,15 @@
     .widget { box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.08) inset; }
   }
 
+
+  /* --- Mobile swipe & arrow navigation --- */
+  .nav-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;opacity:0.85;transition:all .18s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+  .nav-arrow:active{transform:translateY(-50%) scale(.92);background:rgba(0,0,0,0.55)}
+  .nav-arrow.prev{left:8px}.nav-arrow.next{right:8px}
+  @media (hover:hover) and (pointer:fine){.nav-arrow{opacity:0;pointer-events:none}.card-wrap:hover .nav-arrow{opacity:.9;pointer-events:auto}}
+  @media (max-width:768px),(pointer:coarse){.nav-arrow{width:48px;height:48px;font-size:26px;opacity:.95}.nav-arrow.prev{left:6px}.nav-arrow.next{right:6px}.hint::after{content:" • swipe to move"}}
+  .card.swiping{transition:transform .1s ease-out}
+
 </style>
 </head>
 <body>
@@ -270,6 +279,8 @@
         </div>
       </div>
       <div class="hint">click to flip</div>
+      <button id="prevBtn" class="nav-arrow prev" aria-label="Previous">‹</button>
+      <button id="nextBtn" class="nav-arrow next" aria-label="Next">›</button>
       <button id="hideCardBtn" class="hide-btn" title="Hide card (H)">🙈</button>
     </div>
     <div class="toast" id="toast"></div>
@@ -852,6 +863,13 @@
   function next() { const start = index; do { index = (index+1) % cards.length; } while(cards[index].hidden && index!==start); showCard(); saveState(); }
   function prev() { const start = index; do { index = (index-1 + cards.length) % cards.length; } while(cards[index].hidden && index!==start); showCard(); saveState(); }
   card.addEventListener('click', flip);
+
+  const prevBtn=document.getElementById('prevBtn');const nextBtn=document.getElementById('nextBtn');
+  if(prevBtn)prevBtn.addEventListener('click',e=>{e.stopPropagation();prev();});
+  if(nextBtn)nextBtn.addEventListener('click',e=>{e.stopPropagation();next();});
+  (function(){let sx=0,sy=0,st=0;const thr=48,rest=100,at=400;function ts(e){if(e.target.closest('.nav-arrow')||e.target.closest('.hide-btn'))return;const t=e.touches[0];sx=t.clientX;sy=t.clientY;st=Date.now()}function tm(e){if(!sx)return;const t=e.touches[0];const dx=t.clientX-sx,dy=t.clientY-sy;if(Math.abs(dx)>12&&Math.abs(dy)<rest){if(card){const d=Math.max(-18,Math.min(18,dx*0.18));card.style.transform=`translateX(${d}px)`;card.classList.add('swiping')}}}function te(e){if(!sx)return;const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy;const el=Date.now()-st;if(card){card.style.transform='';setTimeout(()=>card.classList.remove('swiping'),120)}if(el<=at&&Math.abs(dx)>=thr&&Math.abs(dy)<=rest){if(dx<0)next();else prev();e.preventDefault()}sx=0;sy=0}const w=document.querySelector('.card-wrap')||card;if(w){w.addEventListener('touchstart',ts,{passive:true});w.addEventListener('touchmove',tm,{passive:true});w.addEventListener('touchend',te,{passive:false})}})();
+  (function(){const t=document.querySelector('.tooltip');if(t&&('ontouchstart'in window||navigator.maxTouchPoints>0))t.textContent='tap to flip • swipe ← → to move • double-tap to zoom'})();
+
 
   let zoomOverlay = null;
   function ensureZoomOverlay() {
