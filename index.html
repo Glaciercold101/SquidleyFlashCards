@@ -219,22 +219,19 @@
   }
 
 
-  /* Mobile nav arrows */
-  .nav-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;opacity:.85;transition:all .18s ease;user-select:none;-webkit-tap-highlight-color:transparent}
-  .nav-arrow:active{transform:translateY(-50%) scale(.92)}
+  /* --- Mobile nav, dots, sound --- */
+  .nav-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;opacity:.85;transition:all .18s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+  .nav-arrow:active{transform:translateY(-50%) scale(.92);background:rgba(0,0,0,0.55)}
   .nav-arrow.prev{left:8px}.nav-arrow.next{right:8px}
+  .nav-arrow:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.28)}
   @media (hover:hover) and (pointer:fine){.nav-arrow{opacity:0;pointer-events:none}.card-wrap:hover .nav-arrow{opacity:.9;pointer-events:auto}}
-  @media (max-width:768px),(pointer:coarse){.nav-arrow{width:48px;height:48px;font-size:26px;opacity:.95}.nav-arrow.prev{left:6px}.nav-arrow.next{right:6px}}
-
-  /* Dot indicators */
-  .dots{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:90%;margin:8px auto 0;padding:0 8px;min-height:10px;transition:opacity .2s}
+  .dots{position:relative;z-index:20;display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:calc(100% - 120px);margin:12px auto 0;padding:5px 10px;min-height:14px;transition:opacity .2s;pointer-events:auto;background:rgba(0,0,0,0.18);border-radius:12px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
   .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.28);transition:all .22s ease;cursor:pointer;flex-shrink:0}
   .dot.active{width:22px;border-radius:4px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,0.45)}
   .dot:hover{background:rgba(255,255,255,0.55);transform:scale(1.2)}
-  @media (max-width:768px){.dots{gap:5px}.dot{width:6px;height:6px}.dot.active{width:18px}}
-  /* hide dots if too many */
   .dots.many .dot{width:4px;height:4px}.dots.many .dot.active{width:12px}
   .card.swiping{transition:transform .1s ease-out}
+  @media (max-width:768px),(pointer:coarse){.nav-arrow{width:48px;height:48px;font-size:26px;opacity:.95;top:40%}.nav-arrow.prev{left:6px}.nav-arrow.next{right:6px}.hint::after{content:" • swipe to move"}.dots{max-width:calc(100% - 130px);margin-top:14px;padding:6px 12px}}
 
 </style>
 </head>
@@ -290,8 +287,8 @@
       </div>
       <div class="hint">click to flip</div>
       <div id="dots" class="dots"></div>
-      <button id="prevBtn" class="nav-arrow prev" aria-label="Previous">‹</button>
-      <button id="nextBtn" class="nav-arrow next" aria-label="Next">›</button>
+      <button id="prevBtn" class="nav-arrow prev" aria-label="Previous" title="Previous">‹</button>
+      <button id="nextBtn" class="nav-arrow next" aria-label="Next" title="Next">›</button>
       <button id="hideCardBtn" class="hide-btn" title="Hide card (H)">🙈</button>
     </div>
     <div class="toast" id="toast"></div>
@@ -875,82 +872,62 @@
   function prev() { const start = index; do { index = (index-1 + cards.length) % cards.length; } while(cards[index].hidden && index!==start); showCard(); saveState(); }
   card.addEventListener('click', flip);
 
-  // --- Dots + Sound + Arrows + Swipe ---
+  // --- Dots + Sound + Arrows + Swipe (fixed overlap) ---
   let soundEnabled = true;
-  try { const s = localStorage.getItem('fc_sound'); if(s!==null) soundEnabled = s==='1'; } catch(e){}
-  const soundBtn = document.getElementById('soundBtn');
-  function updateSoundBtn(){ if(soundBtn) soundBtn.textContent = soundEnabled ? '🔊' : '🔇'; soundBtn.title = soundEnabled ? 'Sound on (click to mute)' : 'Sound off (click to enable)'; }
+  try{ const s=localStorage.getItem('fc_sound'); if(s!==null) soundEnabled=s==='1'; }catch(e){}
+  const soundBtn=document.getElementById('soundBtn');
+  function updateSoundBtn(){ if(soundBtn){ soundBtn.textContent=soundEnabled?'🔊':'🔇'; soundBtn.title=soundEnabled?'Sound on (click to mute)':'Sound off'; } }
   updateSoundBtn();
-  if(soundBtn) soundBtn.addEventListener('click', (e)=>{ e.stopPropagation(); soundEnabled = !soundEnabled; try{localStorage.setItem('fc_sound', soundEnabled?'1':'0')}catch(e){}; updateSoundBtn(); if(soundEnabled){ playSwipeSound('next'); } });
-
-  let audioCtx = null;
-  function getAudioCtx(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+  let audioCtx=null;
+  function getAudioCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
   function playSwipeSound(dir){
     if(!soundEnabled) return;
     try{
-      const ctx = getAudioCtx();
-      if(ctx.state==='suspended') ctx.resume();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = dir==='next' ? 880 : 660;
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime+0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.16);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime+0.17);
+      const ctx=getAudioCtx(); if(ctx.state==='suspended') ctx.resume();
+      const osc=ctx.createOscillator(); const gain=ctx.createGain();
+      osc.type='sine'; osc.frequency.value=dir==='next'?880:660;
+      gain.gain.setValueAtTime(0.0001,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22,ctx.currentTime+0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.16);
+      osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime+0.17);
     }catch(e){}
   }
+  if(soundBtn) soundBtn.addEventListener('click',e=>{ e.stopPropagation(); soundEnabled=!soundEnabled; try{localStorage.setItem('fc_sound',soundEnabled?'1':'0')}catch(e){}; updateSoundBtn(); if(soundEnabled) playSwipeSound('next'); });
 
-  const dotsEl = document.getElementById('dots');
+  const dotsEl=document.getElementById('dots');
   function renderDots(){
     if(!dotsEl) return;
-    const n = cards.length;
-    dotsEl.innerHTML = '';
-    dotsEl.classList.toggle('many', n>30);
+    const n=cards.length; dotsEl.innerHTML=''; dotsEl.classList.toggle('many',n>30);
     if(n>50){ dotsEl.style.display='none'; return; }
     dotsEl.style.display='flex';
     for(let i=0;i<n;i++){
-      const d=document.createElement('div');
-      d.className='dot'+(i===index?' active':'');
-      d.title=`Go to card ${i+1}`;
-      d.addEventListener('click',(e)=>{ e.stopPropagation(); index=i; showCard(); saveState(); if(soundEnabled) playSwipeSound(i>index?'next':'prev'); renderDots(); });
+      const d=document.createElement('div'); d.className='dot'+(i===index?' active':''); d.title='Go to '+(i+1);
+      d.addEventListener('click',e=>{ e.stopPropagation(); index=i; showCard(); saveState(); playSwipeSound('next'); renderDots(); });
       dotsEl.appendChild(d);
     }
   }
   function updateDots(){
     if(!dotsEl) return;
-    const dots = dotsEl.children;
-    for(let i=0;i<dots.length;i++){ dots[i].classList.toggle('active', i===index); }
-    const active = dotsEl.querySelector('.dot.active');
-    if(active) active.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    const ds=dotsEl.children; for(let i=0;i<ds.length;i++) ds[i].classList.toggle('active',i===index);
+    const a=dotsEl.querySelector('.dot.active'); if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
   }
-
-  const prevBtn=document.getElementById('prevBtn');
-  const nextBtn=document.getElementById('nextBtn');
-  const origNext = next; const origPrev = prev;
-  function nextWithFx(){ playSwipeSound('next'); origNext(); updateDots(); }
-  function prevWithFx(){ playSwipeSound('prev'); origPrev(); updateDots(); }
-  if(prevBtn) prevBtn.addEventListener('click',e=>{e.stopPropagation(); prevWithFx();});
-  if(nextBtn) nextBtn.addEventListener('click',e=>{e.stopPropagation(); nextWithFx();}); // NOTE will fix next line
-  if(prevBtn) prevBtn.onclick = (e)=>{ e.stopPropagation(); prevWithFx(); };
-  if(nextBtn) nextBtn.onclick = (e)=>{ e.stopPropagation(); nextWithFx(); };
-
-  // Swipe
+  const prevBtn=document.getElementById('prevBtn'); const nextBtn=document.getElementById('nextBtn');
+  const _origNext=next, _origPrev=prev;
+  function nextWithFx(){ playSwipeSound('next'); _origNext(); updateDots(); }
+  function prevWithFx(){ playSwipeSound('prev'); _origPrev(); updateDots(); }
+  if(prevBtn) prevBtn.onclick=e=>{ e.stopPropagation(); prevWithFx(); };
+  if(nextBtn) nextBtn.onclick=e=>{ e.stopPropagation(); nextWithFx(); };
   (function(){
-    let sx=0,sy=0,st=0;
-    const thr=48,rest=100,at=400;
-    function ts(e){ if(e.target.closest('.nav-arrow')||e.target.closest('.hide-btn')||e.target.closest('.dot')) return; const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); }
+    let sx=0,sy=0,st=0; const thr=48,rest=100,at=400;
+    function ts(e){ if(e.target.closest('.nav-arrow')||e.target.closest('.hide-btn')||e.target.closest('.dot')||e.target.closest('#soundBtn')) return; const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); }
     function tm(e){ if(!sx) return; const t=e.touches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>12 && Math.abs(dy)<rest){ if(card){ const d=Math.max(-18,Math.min(18,dx*0.18)); card.style.transform=`translateX(${d}px)`; card.classList.add('swiping'); } } }
-    function te(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; const el=Date.now()-st; if(card){ card.style.transform=''; setTimeout(()=>card.classList.remove('swiping'),120); } if(el<=at && Math.abs(dx)>=thr && Math.abs(dy)<=rest){ if(dx<0) nextWithFx(); else prevWithFx(); e.preventDefault(); } sx=0; sy=0; }
+    function te(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy, el=Date.now()-st; if(card){ card.style.transform=''; setTimeout(()=>card.classList.remove('swiping'),120); } if(el<=at && Math.abs(dx)>=thr && Math.abs(dy)<=rest){ if(dx<0) nextWithFx(); else prevWithFx(); e.preventDefault(); } sx=0; sy=0; }
     const wrap=document.querySelector('.card-wrap')||card;
     if(wrap){ wrap.addEventListener('touchstart',ts,{passive:true}); wrap.addEventListener('touchmove',tm,{passive:true}); wrap.addEventListener('touchend',te,{passive:false}); }
   })();
-
-  const _origShowCard = showCard;
-  showCard = function(){ _origShowCard(); updateDots(); };
+  const _origShowCard=showCard; showCard=function(){ _origShowCard(); updateDots(); };
   setTimeout(()=>{ renderDots(); updateDots(); }, 80);
-  (function(){ const tip=document.querySelector('.tooltip'); if(tip && ('ontouchstart' in window||navigator.maxTouchPoints>0)) tip.textContent='tap flip • swipe / dots / ‹ › to move • double-tap zoom'; })();
+  (function(){ const tip=document.querySelector('.tooltip'); if(tip && ('ontouchstart' in window||navigator.maxTouchPoints>0)) tip.textContent='tap flip • swipe / dots / ‹ › move • double-tap zoom'; })();
 
 
   let zoomOverlay = null;
