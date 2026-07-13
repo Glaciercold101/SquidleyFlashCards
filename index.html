@@ -2,9 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Flashcard Widget - Fixed for EXE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1">
+<title>Flashcard Widget</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0c0a08">
+<meta name="background-color" content="#0c0a08">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flashcards">
+<meta name="application-name" content="Flashcards">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <style>
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -122,9 +139,89 @@
     .date-time { opacity: 0; }
     .card { max-height: 180px; }
   }
+
+  /* --- PWA / Mobile polish --- */
+  html {
+    height: -webkit-fill-available;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Install button */
+  #installBtn {
+    display: none;
+    background: rgba(255,255,255,0.16) !important;
+    border-color: rgba(255,255,255,0.28) !important;
+    font-weight: 700 !important;
+    animation: pulseInstall 1.8s infinite;
+  }
+  #installBtn.show { display: inline-flex; align-items: center; gap: 4px; }
+  @keyframes pulseInstall { 0%,100%{ transform: scale(1)} 50%{ transform: scale(1.04)} }
+  /* Offline indicator */
+  #offlineDot {
+    position: fixed;
+    top: calc(10px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74,222,128,0.6);
+    z-index: 999;
+    transition: background 0.2s, opacity 0.2s;
+  }
+  #offlineDot.offline { background: #f87171; box-shadow: 0 0 8px rgba(248,113,113,0.6); }
+
+  @media (max-width: 768px), (pointer: coarse) {
+    body { align-items: stretch; }
+    .widget {
+      position: relative !important;
+      left: auto !important;
+      top: auto !important;
+      transform: none !important;
+      width: calc(100vw - 20px) !important;
+      max-width: 480px;
+      margin: 12px auto;
+      height: min(78vh, 560px) !important;
+      min-height: 380px;
+      resize: none;
+      touch-action: manipulation;
+    }
+    .widget .header { cursor: default; }
+    .card-wrap { padding-bottom: 36px; }
+    .controls {
+      opacity: 1 !important;
+      transform: none !important;
+      pointer-events: auto !important;
+      gap: 8px;
+      padding: 0 12px;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+    }
+    .controls button, .controls select { scroll-snap-align: start; height: 30px; font-size: 13px; }
+    .date-time { display: none !important; }
+  }
+
+  /* Standalone PWA tweaks - no browser chrome */
+  @media (display-mode: standalone) {
+    body::before { filter: brightness(0.9) saturate(1); }
+    .widget { box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.08) inset; }
+  }
+
 </style>
 </head>
 <body>
+  <div id="offlineDot" title="Online status"></div>
   <div id="widget" class="widget" style="background-color: rgba(25,15,5,0.55)">
     <div class="header" id="header">
       <div class="date-time" id="datetime">
@@ -133,6 +230,7 @@
       </div>
       <div class="controls" id="controls">
         <span id="deckLabel" style="max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.9; font-size:11px; margin-right:4px; font-weight:600;">No deck</span>
+        <button id="installBtn" title="Install app">⬇ Install</button>
         <button id="newDeckBtn" title="New deck">🗂️</button>
         <button id="importBtn" title="Import text/JSON or image pairs">Import</button>
         <select id="delimiter" title="Delimiter">
