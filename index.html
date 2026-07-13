@@ -880,11 +880,11 @@
   function prev() { const start = index; do { index = (index-1 + cards.length) % cards.length; } while(cards[index].hidden && index!==start); showCard(); saveState(); }
   card.addEventListener('click', flip);
 
-  // --- Dots + Sound + Arrows + Swipe (bottom placement) ---
+  // --- Dots + Sound + Arrows + Swipe (fixed count bug) ---
   let soundEnabled = true;
   try{ const s=localStorage.getItem('fc_sound'); if(s!==null) soundEnabled=s==='1'; }catch(e){}
   const soundBtn=document.getElementById('soundBtn');
-  function updateSoundBtn(){ if(soundBtn){ soundBtn.textContent=soundEnabled?'🔊':'🔇'; soundBtn.title=soundEnabled?'Sound on (click to mute)':'Sound off (click to enable)'; } }
+  function updateSoundBtn(){ if(soundBtn){ soundBtn.textContent=soundEnabled?'🔊':'🔇'; soundBtn.title=soundEnabled?'Sound on (click to mute)':'Sound off'; } }
   updateSoundBtn();
   let audioCtx=null;
   function getAudioCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
@@ -905,21 +905,30 @@
   const dotsEl=document.getElementById('dots');
   function renderDots(){
     if(!dotsEl) return;
-    const n=cards.length; dotsEl.innerHTML=''; dotsEl.classList.toggle('many',n>30);
-    if(n>55){ dotsEl.style.display='none'; return; }
+    const n=cards.length;
+    dotsEl.innerHTML='';
+    dotsEl.classList.toggle('many', n>30);
+    if(n>60){ dotsEl.style.display='none'; return; }
     dotsEl.style.display='flex';
     for(let i=0;i<n;i++){
-      const d=document.createElement('div'); d.className='dot'+(i===index?' active':''); d.title='Go to '+(i+1);
-      d.addEventListener('click',e=>{ e.stopPropagation(); index=i; showCard(); saveState(); playSwipeSound('next'); });
+      const d=document.createElement('div');
+      d.className='dot'+(i===index?' active':'');
+      d.title='Go to '+(i+1);
+      d.addEventListener('click',e=>{ e.stopPropagation(); index=i; showCard(); try{saveState();}catch(e){} playSwipeSound('next'); });
       dotsEl.appendChild(d);
     }
   }
   function updateDots(){
     if(!dotsEl) return;
-    const ds=dotsEl.children; for(let i=0;i<ds.length;i++) ds[i].classList.toggle('active',i===index);
-    const a=dotsEl.querySelector('.dot.active'); if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    // FIX: if card count changed (deck loaded), re-render
+    if(dotsEl.children.length !== cards.length){ renderDots(); return; }
+    const ds=dotsEl.children;
+    for(let i=0;i<ds.length;i++) ds[i].classList.toggle('active', i===index);
+    const a=dotsEl.querySelector('.dot.active');
+    if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
   }
-  const prevBtn=document.getElementById('prevBtn'); const nextBtn=document.getElementById('nextBtn');
+  const prevBtn=document.getElementById('prevBtn');
+  const nextBtn=document.getElementById('nextBtn');
   const _origNext=next, _origPrev=prev;
   function nextWithFx(){ playSwipeSound('next'); _origNext(); updateDots(); }
   function prevWithFx(){ playSwipeSound('prev'); _origPrev(); updateDots(); }
@@ -927,14 +936,36 @@
   if(nextBtn) nextBtn.onclick=e=>{ e.stopPropagation(); nextWithFx(); };
   (function(){
     let sx=0,sy=0,st=0; const thr=48,rest=100,at=400;
-    function ts(e){ if(e.target.closest('.nav-arrow')||e.target.closest('.hide-btn')||e.target.closest('.dot')||e.target.closest('#soundBtn')) return; const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); }
-    function tm(e){ if(!sx) return; const t=e.touches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>12 && Math.abs(dy)<rest){ if(card){ const d=Math.max(-18,Math.min(18,dx*0.18)); card.style.transform=`translateX(${d}px)`; card.classList.add('swiping'); } } }
-    function te(e){ if(!sx) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy, el=Date.now()-st; if(card){ card.style.transform=''; setTimeout(()=>card.classList.remove('swiping'),120); } if(el<=at && Math.abs(dx)>=thr && Math.abs(dy)<=rest){ if(dx<0) nextWithFx(); else prevWithFx(); e.preventDefault(); } sx=0; sy=0; }
+    function ts(e){
+      if(e.target.closest('.nav-arrow')||e.target.closest('.hide-btn')||e.target.closest('.dot')||e.target.closest('#soundBtn')) return;
+      const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now();
+    }
+    function tm(e){
+      if(!sx) return;
+      const t=e.touches[0]; const dx=t.clientX-sx, dy=t.clientY-sy;
+      if(Math.abs(dx)>12 && Math.abs(dy)<rest){
+        if(card){ const d=Math.max(-18,Math.min(18,dx*0.18)); card.style.transform=`translateX(${d}px)`; card.classList.add('swiping'); }
+      }
+    }
+    function te(e){
+      if(!sx) return;
+      const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy, el=Date.now()-st;
+      if(card){ card.style.transform=''; setTimeout(()=>card.classList.remove('swiping'),120); }
+      if(el<=at && Math.abs(dx)>=thr && Math.abs(dy)<=rest){ if(dx<0) nextWithFx(); else prevWithFx(); e.preventDefault(); }
+      sx=0; sy=0;
+    }
     const wrap=document.querySelector('.card-wrap')||card;
     if(wrap){ wrap.addEventListener('touchstart',ts,{passive:true}); wrap.addEventListener('touchmove',tm,{passive:true}); wrap.addEventListener('touchend',te,{passive:false}); }
   })();
-  const _origShowCard=showCard; showCard=function(){ _origShowCard(); updateDots(); };
-  setTimeout(()=>{ renderDots(); updateDots(); }, 80);
+  // Watch for deck size changes - fixes 3-dot bug
+  let _lastCardsLen = cards.length;
+  setInterval(()=>{ if(cards.length!==_lastCardsLen){ _lastCardsLen=cards.length; renderDots(); updateDots(); } }, 350);
+  const _origShowCard=showCard;
+  showCard=function(){ _origShowCard(); updateDots(); };
+  // initial render - multiple delays to catch async deck load
+  setTimeout(()=>{ renderDots(); updateDots(); }, 120);
+  setTimeout(()=>{ renderDots(); updateDots(); }, 600);
+  setTimeout(()=>{ renderDots(); updateDots(); }, 1500);
   (function(){ const tip=document.querySelector('.tooltip'); if(tip && ('ontouchstart' in window||navigator.maxTouchPoints>0)) tip.textContent='tap flip • swipe / dots / ‹ › move • double-tap zoom'; })();
 
 
