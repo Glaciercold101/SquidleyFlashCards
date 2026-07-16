@@ -276,6 +276,90 @@
     #date-left{ font-size:10px; }
   }
 
+
+  /* --- Themes: Blue / Pink / Yellow + Default --- */
+  body.theme-blue .widget { border-color: rgba(111,156,255,0.22); }
+  body.theme-pink .widget { border-color: rgba(255,91,189,0.22); }
+  body.theme-yellow .widget { border-color: rgba(255,215,64,0.22); }
+  body.theme-blue .brand-name { background: linear-gradient(90deg, #7ec8ff 0%, #6f7cff 55%, #9a7bff 100%); -webkit-background-clip:text; background-clip:text; }
+  body.theme-pink .brand-name { background: linear-gradient(90deg, #ff8ecf 0%, #ff5bbd 45%, #ff8a5a 100%); -webkit-background-clip:text; background-clip:text; }
+  body.theme-yellow .brand-name { background: linear-gradient(90deg, #ffe27a 0%, #ffd740 40%, #ffb347 100%); -webkit-background-clip:text; background-clip:text; }
+  body.theme-blue .dot.active { background:#7eb8ff !important; box-shadow:0 0 12px rgba(126,184,255,0.75) !important; }
+  body.theme-pink .dot.active { background:#ff7ac1 !important; box-shadow:0 0 12px rgba(255,122,193,0.75) !important; }
+  body.theme-yellow .dot.active { background:#ffdd57 !important; box-shadow:0 0 12px rgba(255,221,87,0.75) !important; }
+  body.theme-blue .nav-arrow { border-color: rgba(126,184,255,0.3); }
+  body.theme-pink .nav-arrow { border-color: rgba(255,122,193,0.3); }
+  body.theme-yellow .nav-arrow { border-color: rgba(255,221,87,0.35); }
+  #themeSelect { min-width:72px; background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:7px; color:#fff; }
+  body.theme-blue .face { background: rgba(18,32,62,0.22); }
+  body.theme-pink .face { background: rgba(56,18,42,0.24); }
+  body.theme-yellow .face { background: rgba(62,52,12,0.24); }
+  body.theme-blue .editor-box, body.theme-blue .hidden-box { background: rgba(12,22,48,0.92); }
+  body.theme-pink .editor-box, body.theme-pink .hidden-box { background: rgba(44,14,32,0.92); }
+  body.theme-yellow .editor-box, body.theme-yellow .hidden-box { background: rgba(48,38,10,0.92); }
+
+  /* --- Enhanced Zoom Overlay with scrolling + hide + dots --- */
+  .zoom-overlay {
+    position:fixed; inset:0; width:100vw; height:100vh;
+    background: rgba(0,0,0,0.92);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:9999; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    opacity:0; pointer-events:none; transition:opacity 0.26s ease;
+  }
+  .zoom-overlay.open { opacity:1; pointer-events:auto; }
+  .zoom-top-bar {
+    position:absolute; top:0; left:0; right:0; height:56px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 16px; padding-top:env(safe-area-inset-top);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.55), transparent);
+    z-index:10;
+  }
+  .zoom-counter { font-size:13px; opacity:0.7; letter-spacing:0.4px; font-variant-numeric:tabular-nums; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); padding:5px 10px; border-radius:999px; backdrop-filter:blur(6px); }
+  .zoom-close { width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.1); color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(6px); transition:all .15s; }
+  .zoom-close:hover { background:rgba(255,255,255,0.18); transform:scale(1.05); }
+  .zoom-main { position:relative; width:100%; max-width:860px; height:100%; display:flex; align-items:center; justify-content:center; padding:72px 78px 96px; box-sizing:border-box; }
+  .zoom-card-wrap { position:relative; width:100%; max-width:720px; display:flex; align-items:center; justify-content:center; }
+  .zoom-card { width:100%; perspective:1300px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .zoom-card-inner { position:relative; width:100%; min-height:220px; transform-style:preserve-3d; transition:transform 0.52s cubic-bezier(0.2,0.7,0.2,1); }
+  .zoom-card.flipped .zoom-card-inner { transform:rotateY(180deg); }
+  .zoom-face {
+    position:relative; width:100%; min-height:220px; max-height:min(72vh, 640px);
+    overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+    display:flex; align-items:center; justify-content:flex-start; flex-direction:column; text-align:center;
+    padding:28px 22px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); border-radius:18px;
+    backface-visibility:hidden; font-size:clamp(20px, 4vw, 42px); font-weight:400; line-height:1.38; word-break:break-word;
+    box-shadow:0 24px 70px rgba(0,0,0,0.55); scrollbar-width:thin;
+  }
+  .zoom-face::-webkit-scrollbar { width:6px; } .zoom-face::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.22); border-radius:3px; }
+  .zoom-face.back { position:absolute; top:0; left:0; transform:rotateY(180deg); }
+  .zoom-face .img-wrap { display:flex; align-items:center; justify-content:center; width:100%; flex-shrink:0; }
+  .zoom-face img { max-width:100%; max-height:58vh; object-fit:contain; border-radius:12px; box-shadow:0 14px 44px rgba(0,0,0,0.65); display:block; }
+  .zoom-face.has-text-and-image img { max-height:40vh; margin-bottom:14px; }
+  .zoom-face.image-only img { max-height:66vh; }
+  .zoom-nav { position:absolute; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.42); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); color:#fff; font-size:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:6; transition:all .18s ease; user-select:none; }
+  .zoom-nav.prev { left:-66px; } .zoom-nav.next { right:-66px; }
+  .zoom-nav:hover { background:rgba(0,0,0,0.62); transform:translateY(-50%) scale(1.06); }
+  .zoom-nav:active { transform:translateY(-50%) scale(0.92); }
+  .zoom-hide-btn { position:absolute; top:-10px; right:-10px; width:38px; height:38px; background:rgba(0,0,0,0.62); border:1px solid rgba(255,255,255,0.18); border-radius:11px; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:7; backdrop-filter:blur(8px); transition:all .15s; }
+  .zoom-hide-btn:hover { background:rgba(0,0,0,0.82); transform:scale(1.05); }
+  .zoom-dots-wrap { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:8; max-width:92vw; display:flex; justify-content:center; }
+  .zoom-dots-wrap .dots { position:relative !important; bottom:auto !important; left:auto !important; transform:none !important; max-width:88vw !important; }
+  .zoom-hint { position:absolute; bottom:48px; right:18px; font-size:11px; opacity:0.32; letter-spacing:0.3px; pointer-events:none; }
+  /* theme tints for zoom */
+  body.theme-blue .zoom-face { background:rgba(18,34,70,0.62); border-color:rgba(126,184,255,0.22); }
+  body.theme-pink .zoom-face { background:rgba(62,20,48,0.62); border-color:rgba(255,122,193,0.22); }
+  body.theme-yellow .zoom-face { background:rgba(70,56,14,0.62); border-color:rgba(255,221,87,0.24); }
+  body.theme-default .zoom-face { background:rgba(42,24,10,0.62); border-color:rgba(255,160,80,0.18); }
+  @media (max-width:768px), (pointer:coarse){
+    .zoom-main { padding:62px 12px 92px; }
+    .zoom-nav.prev { left:8px; } .zoom-nav.next { right:8px; }
+    .zoom-card-wrap { width:calc(100% - 4px); max-width:100%; }
+    .zoom-face { padding:22px 16px; font-size:clamp(18px, 5.2vw, 30px); max-height:66vh; border-radius:16px; }
+    .zoom-hide-btn { top:8px; right:8px; width:36px; height:36px; }
+    .zoom-dots-wrap { bottom:10px; }
+    .zoom-hint { bottom:44px; right:12px; font-size:10px; }
+  }
+
 </style>
 </head>
 <body>
@@ -310,6 +394,12 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <input type="range" id="opacity" min="0.2" max="1" step="0.05" value="0.55">
         </div>
+        <select id="themeSelect" title="Color theme">
+          <option value="default">🟠 Theme</option>
+          <option value="blue">🔵 Blue</option>
+          <option value="pink">🩷 Pink</option>
+          <option value="yellow">🟡 Yellow</option>
+        </select>
         <button id="addBtn" title="Add card (N)">+</button>
         <button id="editBtn" title="Edit (E)">✎</button>
         <button id="deleteSlideBtn" title="Delete card (Ctrl+Del)">🗑️</button>
@@ -1078,7 +1168,7 @@
     }
   }, 350);
   const _origShowCard=showCard;
-  showCard=function(){ _origShowCard(); updateDots(); };
+  showCard=function(){ _origShowCard(); updateDots(); if(zoomOverlay && zoomOverlay.classList.contains('open')){ renderZoomContent(); } };
   // initial render - multiple delays to catch async deck load
   setTimeout(()=>{ renderDots(); updateDots(); }, 120);
   setTimeout(()=>{ renderDots(); updateDots(); }, 600);
@@ -1086,41 +1176,214 @@
   (function(){ const tip=document.querySelector('.tooltip'); if(tip && ('ontouchstart' in window||navigator.maxTouchPoints>0)) tip.textContent='tap flip • swipe / dots / ‹ › move • double-tap zoom'; })();
 
 
+  // === Enhanced Zoom Overlay with scroll + hide + dots + navigation ===
   let zoomOverlay = null;
+  let zoomCard = null, zoomCardInner = null, zoomFront = null, zoomBack = null;
+  let zoomCounterEl = null, zoomDotsEl = null, zoomPrevBtn = null, zoomNextBtn = null, zoomHideBtn = null, zoomCloseBtn = null;
+  let zoomFlipped = false;
+
   function ensureZoomOverlay() {
     if (zoomOverlay) return zoomOverlay;
     zoomOverlay = document.createElement('div');
     zoomOverlay.id = 'zoomOverlay';
-    zoomOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;z-index:9999;cursor:zoom-out;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity 0.25s ease;pointer-events:none;';
-    const inner = document.createElement('div');
-    inner.id = 'zoomContent';
-    inner.style.cssText = 'max-width:90vw;max-height:90vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;color:#fff;';
-    zoomOverlay.appendChild(inner);
+    zoomOverlay.className = 'zoom-overlay';
+    zoomOverlay.innerHTML = `
+      <div class="zoom-top-bar">
+        <div id="zoomCounter" class="zoom-counter">1/1</div>
+        <button id="zoomClose" class="zoom-close" title="Close (Esc)">✕</button>
+      </div>
+      <div class="zoom-main" id="zoomMain">
+        <div class="zoom-card-wrap">
+          <button id="zoomPrev" class="zoom-nav prev" title="Previous (←)">‹</button>
+          <div id="zoomCard" class="zoom-card" title="Click to flip">
+            <div id="zoomCardInner" class="zoom-card-inner">
+              <div id="zoomFront" class="zoom-face front"></div>
+              <div id="zoomBack" class="zoom-face back"></div>
+            </div>
+          </div>
+          <button id="zoomNext" class="zoom-nav next" title="Next (→)">›</button>
+          <button id="zoomHide" class="zoom-hide-btn" title="Hide card (H)">🙈</button>
+        </div>
+        <div class="zoom-hint">swipe • scroll • Esc to close</div>
+      </div>
+      <div class="zoom-dots-wrap"><div id="zoomDots" class="dots"></div></div>
+    `;
     document.body.appendChild(zoomOverlay);
-    zoomOverlay.addEventListener('click', closeZoom);
+    // cache
+    zoomCard = zoomOverlay.querySelector('#zoomCard');
+    zoomCardInner = zoomOverlay.querySelector('#zoomCardInner');
+    zoomFront = zoomOverlay.querySelector('#zoomFront');
+    zoomBack = zoomOverlay.querySelector('#zoomBack');
+    zoomCounterEl = zoomOverlay.querySelector('#zoomCounter');
+    zoomDotsEl = zoomOverlay.querySelector('#zoomDots');
+    zoomPrevBtn = zoomOverlay.querySelector('#zoomPrev');
+    zoomNextBtn = zoomOverlay.querySelector('#zoomNext');
+    zoomHideBtn = zoomOverlay.querySelector('#zoomHide');
+    zoomCloseBtn = zoomOverlay.querySelector('#zoomClose');
+    const zoomMain = zoomOverlay.querySelector('#zoomMain');
+
+    // events
+    zoomCloseBtn.addEventListener('click', (e)=>{ e.stopPropagation(); closeZoom(); });
+    zoomOverlay.addEventListener('click', (e)=>{
+      if(e.target===zoomOverlay || e.target===zoomMain) closeZoom();
+    });
+    zoomCard.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      zoomFlipped = !zoomFlipped;
+      zoomCard.classList.toggle('flipped', zoomFlipped);
+      // also flip main card for sync
+      if(zoomFlipped) card.classList.add('flipped'); else card.classList.remove('flipped');
+    });
+    zoomPrevBtn.addEventListener('click', (e)=>{ e.stopPropagation(); zoomPrev(); });
+    zoomNextBtn.addEventListener('click', (e)=>{ e.stopPropagation(); zoomNext(); });
+    zoomHideBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hideCurrentCard(); });
+
+    // swipe for zoom
+    (function(){
+      let sx=0,sy=0,st=0;
+      const thr=48, rest=100, at=400;
+      zoomCard.addEventListener('touchstart', (e)=>{
+        if(e.target.closest('.zoom-nav')||e.target.closest('.zoom-hide-btn')) return;
+        const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now();
+      }, {passive:true});
+      zoomCard.addEventListener('touchmove', (e)=>{
+        if(!sx) return;
+        // if vertical scroll inside face, don't intercept unless horizontal
+        const t=e.touches[0]; const dx=t.clientX-sx, dy=t.clientY-sy;
+        if(Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 12) { /* let scroll */ return; }
+        if(Math.abs(dx)>10) { /* prevent page scroll */ }
+      }, {passive:true});
+      zoomCard.addEventListener('touchend', (e)=>{
+        if(!sx) return;
+        const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy, el=Date.now()-st;
+        if(el<=at && Math.abs(dx)>=thr && Math.abs(dy)<=rest){
+          if(dx<0) zoomNext(); else zoomPrev();
+          e.preventDefault();
+        }
+        sx=0; sy=0;
+      }, {passive:false});
+    })();
+
     return zoomOverlay;
   }
-  function openZoom() {
+
+  function renderZoomContent(){
+    if(!zoomOverlay) return;
     ensureZoomOverlay();
-    const inner = zoomOverlay.querySelector('#zoomContent');
-    const isFlipped = card.classList.contains('flipped');
-    const source = isFlipped ? backEl : frontEl;
-    inner.innerHTML = source.innerHTML;
-    const hasImg = inner.querySelector('img');
-    const hasText = inner.textContent.trim().length > 0;
-    inner.classList.remove('has-image-only','has-text-and-image');
-    if (hasImg && !hasText) inner.classList.add('has-image-only');
-    if (hasImg && hasText) inner.classList.add('has-text-and-image');
-    inner.querySelectorAll('img').forEach(img => {
-      img.style.maxWidth = '90vw'; img.style.maxHeight = '90vh'; img.style.objectFit = 'contain'; img.style.borderRadius = '8px'; img.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)'; img.style.margin = 'auto';
+    const c = cards[index];
+    if(!c) return;
+    zoomFront.innerHTML = renderMarkdown(c.front);
+    zoomBack.innerHTML = renderMarkdown(c.back);
+    // face classes
+    [zoomFront, zoomBack].forEach(el=>{
+      el.classList.remove('has-image','has-text','image-only','has-image-only','has-text-and-image');
+      const hasImg = el.querySelector('img');
+      const hasText = el.textContent.trim().length>0;
+      if(hasImg) el.classList.add('has-image');
+      if(hasText) el.classList.add('has-text');
+      if(hasImg && !hasText) { el.classList.add('image-only','has-image-only'); }
+      if(hasImg && hasText) el.classList.add('has-text-and-image');
     });
-    inner.querySelectorAll('.img-wrap').forEach(w => { w.style.display = 'flex'; w.style.alignItems = 'center'; w.style.justifyContent = 'center'; w.style.maxHeight = '90vh'; w.style.width = '100%'; });
-    inner.style.fontSize = 'clamp(22px, 4.5vw, 48px)'; inner.style.fontWeight = '300'; inner.style.lineHeight = '1.35'; inner.style.textShadow = '0 2px 20px rgba(0,0,0,0.7)'; inner.style.fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-    zoomOverlay.style.pointerEvents = 'auto'; requestAnimationFrame(() => { zoomOverlay.style.opacity = '1'; });
+    // scroll to top
+    zoomFront.scrollTop=0; zoomBack.scrollTop=0;
+    zoomCard.classList.toggle('flipped', zoomFlipped);
+    // counter
+    const vis = getVisibleIndices();
+    const pos = vis.indexOf(index)+1;
+    if(zoomCounterEl) zoomCounterEl.textContent = `${pos}/${vis.length}`;
+    renderZoomDots();
   }
-  function closeZoom() { if (!zoomOverlay) return; zoomOverlay.style.opacity = '0'; zoomOverlay.style.pointerEvents = 'none'; }
-  function toggleZoom() { ensureZoomOverlay(); const isOpen = zoomOverlay.style.opacity === '1'; if (isOpen) closeZoom(); else openZoom(); }
-  card.addEventListener('dblclick', (e) => { e.preventDefault(); e.stopPropagation(); openZoom(); });
+
+  function getZoomDotWindowState(){
+    const vis = getVisibleIndices();
+    const total = vis.length;
+    if(total===0) return {vis, start:0, end:0, pos:-1};
+    let pos = vis.indexOf(index); if(pos===-1) pos=0;
+    let start=0, end=total;
+    if(total>20){
+      start = pos - Math.floor(20/2);
+      if(start<0) start=0;
+      if(start+20>total) start=total-20;
+      end=start+20;
+    }
+    return {vis, start, end, pos};
+  }
+
+  function renderZoomDots(){
+    if(!zoomDotsEl) return;
+    const {vis, start, end} = getZoomDotWindowState();
+    const total = vis.length;
+    zoomDotsEl.innerHTML='';
+    zoomDotsEl.classList.toggle('many', total>30);
+    zoomDotsEl.style.display = total ? 'flex' : 'none';
+    zoomDotsEl.classList.toggle('has-prev', start>0);
+    zoomDotsEl.classList.toggle('has-next', end<total);
+    for(let i=start;i<end;i++){
+      const cardIdx = vis[i];
+      const d=document.createElement('div');
+      d.className='dot'+(cardIdx===index?' active':'');
+      d.dataset.cardIdx=String(cardIdx);
+      d.title='Go to '+(i+1)+' of '+total;
+      d.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        index=cardIdx;
+        // keep zoom flipped state? reset to front
+        // zoomFlipped=false;
+        showCard();
+        renderZoomContent();
+        saveState();
+        playSwipeSound('next');
+      });
+      zoomDotsEl.appendChild(d);
+    }
+  }
+
+  function updateZoomDots(){
+    if(!zoomDotsEl) return;
+    const {vis, start, end} = getZoomDotWindowState();
+    const total = vis.length;
+    const first = zoomDotsEl.firstChild ? Number(zoomDotsEl.firstChild.dataset.cardIdx) : -1;
+    const expectedFirst = total ? vis[start] : -1;
+    if(zoomDotsEl.children.length !== Math.min(total,20) || first !== expectedFirst){
+      renderZoomDots(); return;
+    }
+    Array.from(zoomDotsEl.children).forEach(el=>{
+      const idx = Number(el.dataset.cardIdx);
+      el.classList.toggle('active', idx===index);
+    });
+    const a=zoomDotsEl.querySelector('.dot.active');
+    if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  }
+
+  function zoomNext(){
+    playSwipeSound('next');
+    const start=index; do{ index=(index+1)%cards.length; }while(cards[index].hidden && index!==start);
+    showCard(); renderZoomContent(); saveState();
+  }
+  function zoomPrev(){
+    playSwipeSound('prev');
+    const start=index; do{ index=(index-1+cards.length)%cards.length; }while(cards[index].hidden && index!==start);
+    showCard(); renderZoomContent(); saveState();
+  }
+
+  function openZoom(){
+    ensureZoomOverlay();
+    zoomFlipped = card.classList.contains('flipped');
+    renderZoomContent();
+    zoomOverlay.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function closeZoom(){
+    if(!zoomOverlay) return;
+    zoomOverlay.classList.remove('open');
+    document.body.style.overflow='';
+  }
+  function toggleZoom(){
+    ensureZoomOverlay();
+    if(zoomOverlay.classList.contains('open')) closeZoom(); else openZoom();
+  }
+  card.addEventListener('dblclick', (e)=>{ e.preventDefault(); e.stopPropagation(); openZoom(); });
+
 
   let dragging = false, dx=0, dy=0;
   function startDrag(clientX, clientY){
@@ -1154,12 +1417,45 @@
   window.addEventListener('touchmove', e => { if (!dragging) return; const t = e.touches[0]; widget.style.left = (t.clientX - dx) + 'px'; widget.style.top = (t.clientY - dy) + 'px'; }, {passive:true});
   window.addEventListener('touchend', () => { if (dragging) { dragging = false; saveState(); } else dragging = false; });
 
-  function setOpacity(v) { widget.style.backgroundColor = `rgba(25,15,5,${v})`; }
+  const THEME_KEY = 'fc_theme';
+  const themeColors = {
+    default: {r:25,g:15,b:5, accent:'#ff7a18'},
+    blue: {r:10,g:22,b:48, accent:'#6fb7ff'},
+    pink: {r:42,g:12,b:32, accent:'#ff5bbd'},
+    yellow: {r:48,g:38,b:8, accent:'#ffd740'}
+  };
+  let currentTheme = 'default';
+  try { const t = localStorage.getItem(THEME_KEY); if(t && themeColors[t]) currentTheme = t; } catch(e){}
+  function applyTheme(theme){
+    if(!themeColors[theme]) theme='default';
+    currentTheme = theme;
+    document.body.classList.remove('theme-default','theme-blue','theme-pink','theme-yellow');
+    document.body.classList.add('theme-'+theme);
+    widget.classList.remove('theme-default','theme-blue','theme-pink','theme-yellow');
+    widget.classList.add('theme-'+theme);
+    const op = opacitySlider ? opacitySlider.value : 0.55;
+    const c = themeColors[theme];
+    widget.style.backgroundColor = `rgba(${c.r},${c.g},${c.b},${op})`;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if(meta) meta.setAttribute('content', c.accent);
+    try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
+    const sel = document.getElementById('themeSelect');
+    if(sel) sel.value = theme;
+  }
+  function setOpacity(v) {
+    const c = themeColors[currentTheme] || themeColors.default;
+    widget.style.backgroundColor = `rgba(${c.r},${c.g},${c.b},${v})`;
+  }
   opacitySlider.addEventListener('input', e => { setOpacity(e.target.value); saveState(); });
   setOpacity(opacitySlider.value);
 
   window.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeZoom(); if (!editor.classList.contains('hidden')) cancelEdit.click(); return; }
+    if (e.key === 'Escape') { if(zoomOverlay && zoomOverlay.classList.contains('open')){ closeZoom(); return; } if (!editor.classList.contains('hidden')) { cancelEdit.click(); return; } closeZoom(); return; }
+    if(zoomOverlay && zoomOverlay.classList.contains('open')){
+      if(e.key==='ArrowRight'){ zoomNext(); e.preventDefault(); return; }
+      if(e.key==='ArrowLeft'){ zoomPrev(); e.preventDefault(); return; }
+      if(e.key===' ' || e.key==='ArrowUp' || e.key==='ArrowDown'){ e.preventDefault(); zoomFlipped=!zoomFlipped; if(zoomCard) zoomCard.classList.toggle('flipped', zoomFlipped); if(zoomFlipped) card.classList.add('flipped'); else card.classList.remove('flipped'); return; }
+    }
     if (!editor.classList.contains('hidden')) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     switch(e.key) {
@@ -1410,6 +1706,9 @@
         if (deck) { cards = JSON.parse(JSON.stringify(deck.cards)); cards.forEach(c=>{ if(c.hidden===undefined) c.hidden=false; }); index = Math.min(saved.index || 0, cards.length-1); deckSelect.value = String(deck.id); }
       } catch {}
     } else if (saved.cards?.length) { cards = saved.cards; index = saved.index || 0; }
+    try{ applyTheme(currentTheme); }catch(e){}
+    const themeSel = document.getElementById('themeSelect');
+    if(themeSel){ themeSel.value = currentTheme; themeSel.addEventListener('change', (e)=>{ applyTheme(e.target.value); showToast('Theme: '+e.target.value); }); }
     showCard();
     // Centering is now handled by CSS default (top:50% left:50% transform) and loadState.
     // Mobile/tablet centering is handled by @media (max-width:768px) with margin:auto.
