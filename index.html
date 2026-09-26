@@ -377,12 +377,9 @@
   body.theme-blue .dot.active { background:#7eb8ff !important; box-shadow:0 0 12px rgba(126,184,255,0.75) !important; }
   body.theme-pink .dot.active { background:#ff7ac1 !important; box-shadow:0 0 12px rgba(255,122,193,0.75) !important; }
   body.theme-yellow .dot.active { background:#ffdd57 !important; box-shadow:0 0 12px rgba(255,221,87,0.75) !important; }
-  body.theme-blue .nav-arrow { display: none !important; /* removed per user */ }
-  .nav-arrow-removed { border-color: rgba(126,184,255,0.3); }
-  body.theme-pink .nav-arrow { display: none !important; /* removed per user */ }
-  .nav-arrow-removed { border-color: rgba(255,122,193,0.3); }
-  body.theme-yellow .nav-arrow { display: none !important; /* removed per user */ }
-  .nav-arrow-removed { border-color: rgba(255,221,87,0.35); }
+  body.theme-blue .nav-arrow { border-color: rgba(126,184,255,0.3); }
+  body.theme-pink .nav-arrow { border-color: rgba(255,122,193,0.3); }
+  body.theme-yellow .nav-arrow { border-color: rgba(255,221,87,0.35); }
   #themeSelect { min-width:72px; background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:7px; color:#fff; }
   body.theme-blue .face { background: rgba(18,32,62,0.22); }
   body.theme-pink .face { background: rgba(56,18,42,0.24); }
@@ -424,6 +421,68 @@
     }
   }
 
+
+
+  /* --- Enhanced Zoom Overlay with scrolling + hide + dots (restored) --- */
+  .zoom-overlay {
+    position:fixed; inset:0; width:100vw; height:100vh;
+    background: rgba(12,10,8,0.35);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:10000; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    opacity:0; pointer-events:none; transition:opacity 0.26s ease;
+  }
+  .zoom-overlay.open { opacity:1; pointer-events:auto; }
+  .zoom-top-bar {
+    position:absolute; top:0; left:0; right:0; height:56px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 16px; padding-top:env(safe-area-inset-top);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent);
+    z-index:10;
+  }
+  .zoom-counter { font-size:13px; opacity:0.8; letter-spacing:0.4px; font-variant-numeric:tabular-nums; background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.14); padding:5px 10px; border-radius:999px; backdrop-filter:blur(6px); }
+  .zoom-close { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.12); color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(6px); transition:all .15s; }
+  .zoom-close:hover { background:rgba(255,255,255,0.2); transform:scale(1.06); }
+  .zoom-main { position:relative; width:100%; max-width:860px; height:100%; display:flex; align-items:center; justify-content:center; padding:72px 78px 96px; box-sizing:border-box; }
+  .zoom-card-wrap { position:relative; width:100%; max-width:720px; display:flex; align-items:center; justify-content:center; }
+  .zoom-card { width:100%; perspective:1300px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .zoom-card-inner { position:relative; width:100%; min-height:220px; transform-style:preserve-3d; transition:transform 0.52s cubic-bezier(0.2,0.7,0.2,1); }
+  .zoom-card.flipped .zoom-card-inner { transform:rotateY(180deg); }
+  .zoom-face {
+    position:relative; width:100%; min-height:220px; max-height:min(76vh, 680px);
+    overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+    display:flex; align-items:center; justify-content:flex-start; flex-direction:column; text-align:center;
+    padding:28px 22px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); border-radius:18px;
+    backface-visibility:hidden; font-size:clamp(20px, 4.2vw, 44px); font-weight:400; line-height:1.38; word-break:break-word;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6); scrollbar-width:thin;
+  }
+  .zoom-face::-webkit-scrollbar { width:6px; } .zoom-face::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.24); border-radius:3px; }
+  .zoom-face.back { position:absolute; top:0; left:0; transform:rotateY(180deg); }
+  .zoom-face .img-wrap { display:flex; align-items:center; justify-content:center; width:100%; flex-shrink:0; }
+  .zoom-face img { max-width:100%; max-height:60vh; object-fit:contain; border-radius:12px; box-shadow:0 14px 44px rgba(0,0,0,0.7); display:block; }
+  .zoom-face.has-text-and-image img { max-height:42vh; margin-bottom:14px; }
+  .zoom-face.image-only img { max-height:70vh; }
+  .zoom-nav { position:absolute; top:50%; transform:translateY(-50%); width:54px; height:54px; border-radius:50%; border:1px solid rgba(255,255,255,0.22); background:rgba(0,0,0,0.44); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); color:#fff; font-size:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:6; transition:all .18s ease; user-select:none; }
+  .zoom-nav.prev { left:-68px; } .zoom-nav.next { right:-68px; }
+  .zoom-nav:hover { background:rgba(0,0,0,0.64); transform:translateY(-50%) scale(1.08); }
+  .zoom-nav:active { transform:translateY(-50%) scale(0.92); }
+  .zoom-hide-btn { position:absolute; top:-12px; right:-12px; width:40px; height:40px; background:rgba(0,0,0,0.64); border:1px solid rgba(255,255,255,0.2); border-radius:12px; color:#fff; font-size:17px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:7; backdrop-filter:blur(8px); transition:all .15s; }
+  .zoom-hide-btn:hover { background:rgba(0,0,0,0.84); transform:scale(1.06); }
+  .zoom-dots-wrap { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); z-index:8; max-width:92vw; display:flex; justify-content:center; }
+  .zoom-dots-wrap .dots { position:relative !important; bottom:auto !important; left:auto !important; transform:none !important; max-width:88vw !important; }
+  .zoom-hint { position:absolute; bottom:50px; right:18px; font-size:11px; opacity:0.34; letter-spacing:0.3px; pointer-events:none; }
+  body.theme-blue .zoom-face { background:rgba(18,34,70,0.64); border-color:rgba(126,184,255,0.24); }
+  body.theme-pink .zoom-face { background:rgba(62,20,48,0.64); border-color:rgba(255,122,193,0.24); }
+  body.theme-yellow .zoom-face { background:rgba(70,56,14,0.64); border-color:rgba(255,221,87,0.26); }
+  body.theme-default .zoom-face { background:rgba(42,24,10,0.64); border-color:rgba(255,160,80,0.2); }
+  @media (max-width:768px), (pointer:coarse){
+    .zoom-main { padding:64px 12px 94px; }
+    .zoom-nav.prev { left:8px; } .zoom-nav.next { right:8px; }
+    .zoom-card-wrap { width:calc(100% - 6px); max-width:100%; }
+    .zoom-face { padding:22px 16px; font-size:clamp(18px, 5.4vw, 32px); max-height:70vh; border-radius:16px; }
+    .zoom-hide-btn { top:8px; right:8px; width:36px; height:36px; }
+    .zoom-dots-wrap { bottom:12px; }
+    .zoom-hint { bottom:46px; right:12px; font-size:10px; }
+  }
 
 </style>
 </head>
@@ -484,7 +543,7 @@
           <button id="hiddenBtn" title="Hidden cards (H)">🙈 <span id="hiddenCount" style="font-size:10px;opacity:0.8;margin-left:2px">0</span></button>
           <button id="unhideAllBtn" title="Unhide all (Shift+H)">👁️</button>
         </div>
-        <div class="tooltip">← → navigate • ↑ ↓ or Space flip • N new • E edit • Import images = pairs</div>
+        <div class="tooltip">← → navigate • ↑ ↓ or Space flip • N new • E edit • Z zoom • dbl-click zoom • Import images = pairs</div>
       </div>
     </div>
     <div class="card-wrap">
@@ -497,7 +556,9 @@
       </div>
       <div class="hint">click to flip</div>
       <div id="dots" class="dots"></div>
-      <div class="shortcuts-footer">Space flip • ← → navigate</div>
+      <div class="shortcuts-footer">Z zoom • Space flip • ← → navigate</div>
+      <button id="prevBtn" class="nav-arrow prev" aria-label="Previous" title="Previous">‹</button>
+      <button id="nextBtn" class="nav-arrow next" aria-label="Next" title="Next">›</button>
       <button id="hideCardBtn" class="hide-btn" title="Hide card (H)">🙈</button>
     </div>
     <div class="toast" id="toast"></div>
@@ -1093,10 +1154,74 @@
     card.classList.remove('flipped');
     updateClock(); updateHiddenCount();
   }
+
+  // --- Auto-fit widget to content (text length / picture) ---
+  function autoFitToContent() {
+    try {
+      if (typeof isFocused !== 'undefined' && isFocused) return;
+      if (zoomOverlay && zoomOverlay.classList.contains('open')) return;
+      if (!widget || widget.classList.contains('focused')) return;
+      const faces = [frontEl, backEl].filter(Boolean);
+      if (!faces.length) return;
+      let maxH = 0;
+      faces.forEach(face => {
+        const prevOverflow = face.style.overflow;
+        const prevHeight = face.style.height;
+        face.style.overflow = 'visible';
+        face.style.height = 'auto';
+        const h = face.scrollHeight;
+        if (h > maxH) maxH = h;
+        face.style.overflow = prevOverflow;
+        face.style.height = prevHeight;
+      });
+      const header = document.getElementById('header');
+      const headerH = header ? header.offsetHeight : 52;
+      const chrome = 38 + 34;
+      let desired = headerH + maxH + chrome + 12;
+      const minH = 220;
+      const maxVH = Math.min(window.innerHeight * 0.88, 760);
+      desired = Math.max(minH, Math.min(desired, maxVH));
+      const currentH = widget.offsetHeight;
+      if (Math.abs(currentH - desired) > 12) {
+        widget.style.height = desired + 'px';
+      }
+      const activeFace = (card && card.classList.contains('flipped')) ? backEl : frontEl;
+      if (activeFace) {
+        const img = activeFace.querySelector('img');
+        if (img && img.complete && img.naturalWidth > 10) {
+          const isImageOnly = activeFace.classList.contains('image-only') || activeFace.classList.contains('has-image-only');
+          if (isImageOnly) {
+            const vw = window.innerWidth;
+            const maxW = Math.min(vw * 0.92, 560);
+            const minW = 280;
+            let desiredW = img.naturalWidth + 64;
+            if (img.naturalHeight > img.naturalWidth) desiredW = Math.min(desiredW, 420);
+            desiredW = Math.max(minW, Math.min(desiredW, maxW));
+            if (Math.abs(widget.offsetWidth - desiredW) > 18) {
+              widget.style.width = desiredW + 'px';
+            }
+          }
+        }
+      }
+    } catch(e) { console.warn('autoFit failed', e); }
+  }
+  function bindAutoFitImages() {
+    [frontEl, backEl].forEach(face => {
+      if (!face) return;
+      face.querySelectorAll('img').forEach(img => {
+        if (!img.complete) {
+          img.addEventListener('load', () => { setTimeout(autoFitToContent, 60); }, {once:true});
+        }
+      });
+    });
+  }
+
+
   function flip() { card.classList.toggle('flipped'); }
   function next() { const start = index; do { index = (index+1) % cards.length; } while(cards[index].hidden && index!==start); showCard(); saveState(); }
   function prev() { const start = index; do { index = (index-1 + cards.length) % cards.length; } while(cards[index].hidden && index!==start); showCard(); saveState(); }
   card.addEventListener('click', flip);
+  card.addEventListener('dblclick', (e)=>{ e.preventDefault(); e.stopPropagation(); openZoom(); });
 
   // --- Dots + Sound + Arrows + Swipe (fixed count bug) ---
   let soundEnabled = true;
@@ -1196,8 +1321,8 @@
     const a=dotsEl.querySelector('.dot.active');
     if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
   }
-  const prevBtn=document.getElementById('prevBtn'); // removed
-  const nextBtn=document.getElementById('nextBtn'); // removed
+  const prevBtn=document.getElementById('prevBtn');
+  const nextBtn=document.getElementById('nextBtn');
   const _origNext=next, _origPrev=prev;
   function nextWithFx(){ playSwipeSound('next'); _origNext(); updateDots(); }
   function prevWithFx(){ playSwipeSound('prev'); _origPrev(); updateDots(); }
@@ -1241,144 +1366,286 @@
   setTimeout(()=>{ renderDots(); updateDots(); }, 120);
   setTimeout(()=>{ renderDots(); updateDots(); }, 600);
   setTimeout(()=>{ renderDots(); updateDots(); }, 1500);
-  (function(){ const tip=document.querySelector('.tooltip'); if(tip && ('ontouchstart' in window||navigator.maxTouchPoints>0)) tip.textContent='tap flip • swipe / dots / ‹ › move'; })();
+  (function(){ const tip=document.querySelector('.tooltip'); if(tip && ('ontouchstart' in window||navigator.maxTouchPoints>0)) tip.textContent='tap flip • swipe / dots / ‹ › move • double-tap zoom'; })();
 
 
   
-  // --- Focus Fit Button Logic - True Fullscreen like reference app ---
+  // --- Focus Fit Button Logic ---
   let isFocused = false;
-  let prevInlineStyles = null;
-
-  function isMobile() {
-    return window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  }
-
-  function enterFocusVisual() {
-    // Save inline styles for restore
-    prevInlineStyles = {
-      left: widget.style.left,
-      top: widget.style.top,
-      width: widget.style.width,
-      height: widget.style.height,
-      transform: widget.style.transform,
-      borderRadius: widget.style.borderRadius
-    };
-    isFocused = true;
-    widget.classList.add('focused');
-    document.body.classList.add('focus-mode');
-    document.body.style.overflow = 'hidden';
+  function toggleFocusFit() {
+    isFocused = !isFocused;
+    widget.classList.toggle('focused', isFocused);
     const btn = document.getElementById('focusBtn');
     if (btn) {
-      btn.classList.add('active');
-      btn.textContent = '🗗 Exit';
-      btn.title = 'Exit fullscreen';
+      btn.classList.toggle('active', isFocused);
+      btn.textContent = isFocused ? '⛶ Exit' : '⛶ Focus';
+      btn.title = isFocused ? 'Exit fit-to-screen' : 'Fit app to screen';
     }
-    // On mobile, hide address bar by scrolling slightly
-    if (isMobile()) {
-      setTimeout(() => window.scrollTo(0,1), 100);
-    }
-  }
-
-  function exitFocusVisual() {
-    isFocused = false;
-    widget.classList.remove('focused');
-    document.body.classList.remove('focus-mode');
-    document.body.style.overflow = '';
-    const btn = document.getElementById('focusBtn');
-    if (btn) {
-      btn.classList.remove('active');
-      btn.textContent = '⛶ Focus';
-      btn.title = 'Fit app to screen - fullscreen';
-    }
-    // Restore inline styles if we have them, otherwise clear to let autoFit work
-    if (prevInlineStyles) {
-      // For desktop, restore saved position from localStorage if available
-      try {
-        const raw = localStorage.getItem('squidley_fc_state_v2');
-        if (raw) {
-          const s = JSON.parse(raw);
-          if (s.left && s.top) {
-            widget.style.left = s.left;
-            widget.style.top = s.top;
-            widget.style.width = s.width || '';
-            widget.style.height = s.height || '';
-            widget.style.transform = s.left === '50%' ? 'translate(-50%, -50%)' : 'none';
-          } else {
+    if (isFocused) {
+      // Store previous inline position for restore via saveState? keep simple, just expand
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      // Restore centering if it was centered via transform
+      // Let saveState handle position, but if inline top/left were overwritten, reset to centered default for desktop
+      if (window.innerWidth > 768) {
+        // If user had no saved position, centering will be via CSS; clear inline to allow centering
+        // Only clear if it was set to 0 by focus
+        if (widget.style.left === '0px' || widget.style.top === '0px') {
+          // Try to restore from saved state or default center
+          try {
+            const raw = localStorage.getItem('squidley_fc_state_v2');
+            if (raw) {
+              const s = JSON.parse(raw);
+              if (s.left && s.top) {
+                widget.style.left = s.left;
+                widget.style.top = s.top;
+                widget.style.width = s.width || '';
+                widget.style.height = s.height || '';
+                widget.style.transform = s.left === '50%' ? 'translate(-50%, -50%)' : 'none';
+              } else {
+                widget.style.left = '';
+                widget.style.top = '';
+                widget.style.width = '';
+                widget.style.height = '';
+                widget.style.transform = '';
+              }
+            } else {
+              widget.style.left = '';
+              widget.style.top = '';
+              widget.style.width = '';
+              widget.style.height = '';
+              widget.style.transform = '';
+            }
+          } catch(e) {
             widget.style.left = '';
             widget.style.top = '';
             widget.style.width = '';
             widget.style.height = '';
             widget.style.transform = '';
           }
-        } else {
-          widget.style.left = prevInlineStyles.left;
-          widget.style.top = prevInlineStyles.top;
-          widget.style.width = prevInlineStyles.width;
-          widget.style.height = prevInlineStyles.height;
-          widget.style.transform = prevInlineStyles.transform;
         }
-      } catch(e) {
+      } else {
+        // mobile default
         widget.style.left = '';
         widget.style.top = '';
         widget.style.width = '';
         widget.style.height = '';
         widget.style.transform = '';
       }
-      prevInlineStyles = null;
-    } else {
-      widget.style.left = '';
-      widget.style.top = '';
-      widget.style.width = '';
-      widget.style.height = '';
-      widget.style.transform = '';
     }
-    // Re-fit to content after exit
-    setTimeout(() => { if (typeof autoFitToContent === 'function') autoFitToContent(); }, 80);
-    try { if (typeof saveState === 'function') saveState(); } catch(e){}
+    try { if (typeof saveState === 'function' && !isFocused) saveState(); } catch(e){}
   }
-
-  async function toggleFocusFit() {
-    if (!isFocused) {
-      enterFocusVisual();
-      // Try true fullscreen like reference app
-      try {
-        const el = widget;
-        if (el.requestFullscreen) {
-          await el.requestFullscreen({navigationUI: 'hide'});
-        } else if (el.webkitRequestFullscreen) {
-          await el.webkitRequestFullscreen();
-        } else if (document.documentElement.requestFullscreen) {
-          // Fallback: fullscreen the whole document
-          await document.documentElement.requestFullscreen({navigationUI: 'hide'});
-        }
-      } catch(err) {
-        // Fullscreen may fail on iOS or without user gesture, CSS focused still works
-        console.log('Fullscreen API fallback to CSS', err);
-      }
-    } else {
-      try {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) await document.exitFullscreen();
-          else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
-        }
-      } catch(err) {}
-      exitFocusVisual();
-    }
-  }
-
-  // Sync when user exits fullscreen via Esc or system gesture
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && isFocused) {
-      // User pressed Esc
-      exitFocusVisual();
-    }
-  });
-  document.addEventListener('webkitfullscreenchange', () => {
-    if (!document.webkitFullscreenElement && isFocused) {
-      exitFocusVisual();
-    }
-  });
   
+  
+  // === Enhanced Zoom Overlay with scroll + hide + dots + navigation (restored) ===
+  let zoomOverlay = null;
+  let zoomCard = null, zoomCardInner = null, zoomFront = null, zoomBack = null;
+  let zoomCounterEl = null, zoomDotsEl = null, zoomPrevBtn = null, zoomNextBtn = null, zoomHideBtn = null, zoomCloseBtn = null;
+  let zoomFlipped = false;
+
+  function ensureZoomOverlay() {
+    if (zoomOverlay) return zoomOverlay;
+    zoomOverlay = document.createElement('div');
+    zoomOverlay.id = 'zoomOverlay';
+    zoomOverlay.className = 'zoom-overlay';
+    zoomOverlay.innerHTML = `
+      <div class="zoom-top-bar">
+        <div id="zoomCounter" class="zoom-counter">1/1</div>
+        <button id="zoomClose" class="zoom-close" title="Close (Esc)">✕</button>
+      </div>
+      <div class="zoom-main" id="zoomMain">
+        <div class="zoom-card-wrap">
+          <button id="zoomPrev" class="zoom-nav prev" title="Previous (←)">‹</button>
+          <div id="zoomCard" class="zoom-card" title="Click to flip">
+            <div id="zoomCardInner" class="zoom-card-inner">
+              <div id="zoomFront" class="zoom-face front"></div>
+              <div id="zoomBack" class="zoom-face back"></div>
+            </div>
+          </div>
+          <button id="zoomNext" class="zoom-nav next" title="Next (→)">›</button>
+          <button id="zoomHide" class="zoom-hide-btn" title="Hide card (H)">🙈</button>
+        </div>
+        <div class="zoom-hint">swipe • scroll • Esc to close</div>
+      </div>
+      <div class="zoom-dots-wrap"><div id="zoomDots" class="dots"></div></div>
+    `;
+    document.body.appendChild(zoomOverlay);
+    zoomCard = zoomOverlay.querySelector('#zoomCard');
+    zoomCardInner = zoomOverlay.querySelector('#zoomCardInner');
+    zoomFront = zoomOverlay.querySelector('#zoomFront');
+    zoomBack = zoomOverlay.querySelector('#zoomBack');
+    zoomCounterEl = zoomOverlay.querySelector('#zoomCounter');
+    zoomDotsEl = zoomOverlay.querySelector('#zoomDots');
+    zoomPrevBtn = zoomOverlay.querySelector('#zoomPrev');
+    zoomNextBtn = zoomOverlay.querySelector('#zoomNext');
+    zoomHideBtn = zoomOverlay.querySelector('#zoomHide');
+    zoomCloseBtn = zoomOverlay.querySelector('#zoomClose');
+    const zoomMain = zoomOverlay.querySelector('#zoomMain');
+
+    zoomCloseBtn.addEventListener('click', (e)=>{ e.stopPropagation(); closeZoom(); });
+    zoomOverlay.addEventListener('click', (e)=>{
+      if(e.target===zoomOverlay || e.target===zoomMain) closeZoom();
+    });
+    zoomCard.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      zoomFlipped = !zoomFlipped;
+      zoomCard.classList.toggle('flipped', zoomFlipped);
+      if(zoomFlipped) card.classList.add('flipped'); else card.classList.remove('flipped');
+    });
+    zoomPrevBtn.addEventListener('click', (e)=>{ e.stopPropagation(); zoomPrev(); });
+    zoomNextBtn.addEventListener('click', (e)=>{ e.stopPropagation(); zoomNext(); });
+    zoomHideBtn.addEventListener('click', (e)=>{ e.stopPropagation(); hideCurrentCard(); });
+
+    (function(){
+      let sx=0,sy=0,st=0;
+      const thr=48, rest=100, at=400;
+      zoomCard.addEventListener('touchstart', (e)=>{
+        if(e.target.closest('.zoom-nav')||e.target.closest('.zoom-hide-btn')) return;
+        const t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now();
+      }, {passive:true});
+      zoomCard.addEventListener('touchmove', (e)=>{
+        if(!sx) return;
+        const t=e.touches[0]; const dx=t.clientX-sx, dy=t.clientY-sy;
+        if(Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 12) { return; }
+      }, {passive:true});
+      zoomCard.addEventListener('touchend', (e)=>{
+        if(!sx) return;
+        const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy, el=Date.now()-st;
+        if(el<=at && Math.abs(dx)>=thr && Math.abs(dy)<=rest){
+          if(dx<0) zoomNext(); else zoomPrev();
+          e.preventDefault();
+        }
+        sx=0; sy=0;
+      }, {passive:false});
+    })();
+
+    return zoomOverlay;
+  }
+
+  function renderZoomContent(){
+    if(!zoomOverlay) return;
+    ensureZoomOverlay();
+    const c = cards[index];
+    if(!c) return;
+    zoomFront.innerHTML = renderMarkdown(c.front);
+    zoomBack.innerHTML = renderMarkdown(c.back);
+    [zoomFront, zoomBack].forEach(el=>{
+      el.classList.remove('has-image','has-text','image-only','has-image-only','has-text-and-image');
+      const hasImg = el.querySelector('img');
+      const hasText = el.textContent.trim().length>0;
+      if(hasImg) el.classList.add('has-image');
+      if(hasText) el.classList.add('has-text');
+      if(hasImg && !hasText) { el.classList.add('image-only','has-image-only'); }
+      if(hasImg && hasText) el.classList.add('has-text-and-image');
+    });
+    zoomFront.scrollTop=0; zoomBack.scrollTop=0;
+    zoomCard.classList.toggle('flipped', zoomFlipped);
+    const vis = getVisibleIndices();
+    const pos = vis.indexOf(index)+1;
+    if(zoomCounterEl) zoomCounterEl.textContent = `${pos}/${vis.length}`;
+    renderZoomDots();
+  }
+
+  function getZoomDotWindowState(){
+    const vis = getVisibleIndices();
+    const total = vis.length;
+    if(total===0) return {vis, start:0, end:0, pos:-1};
+    let pos = vis.indexOf(index); if(pos===-1) pos=0;
+    let start=0, end=total;
+    if(total>20){
+      start = pos - Math.floor(20/2);
+      if(start<0) start=0;
+      if(start+20>total) start=total-20;
+      end=start+20;
+    }
+    return {vis, start, end, pos};
+  }
+
+  function renderZoomDots(){
+    if(!zoomDotsEl) return;
+    const {vis, start, end} = getZoomDotWindowState();
+    const total = vis.length;
+    zoomDotsEl.innerHTML='';
+    zoomDotsEl.classList.toggle('many', total>30);
+    zoomDotsEl.style.display = total ? 'flex' : 'none';
+    zoomDotsEl.classList.toggle('has-prev', start>0);
+    zoomDotsEl.classList.toggle('has-next', end<total);
+    for(let i=start;i<end;i++){
+      const cardIdx = vis[i];
+      const d=document.createElement('div');
+      d.className='dot'+(cardIdx===index?' active':'');
+      d.dataset.cardIdx=String(cardIdx);
+      d.title='Go to '+(i+1)+' of '+total;
+      d.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        index=cardIdx;
+        showCard();
+        renderZoomContent();
+        saveState();
+        playSwipeSound('next');
+      });
+      zoomDotsEl.appendChild(d);
+    }
+  }
+
+  function updateZoomDots(){
+    if(!zoomDotsEl) return;
+    const {vis, start, end} = getZoomDotWindowState();
+    const total = vis.length;
+    const first = zoomDotsEl.firstChild ? Number(zoomDotsEl.firstChild.dataset.cardIdx) : -1;
+    const expectedFirst = total ? vis[start] : -1;
+    if(zoomDotsEl.children.length !== Math.min(total,20) || first !== expectedFirst){
+      renderZoomDots(); return;
+    }
+    Array.from(zoomDotsEl.children).forEach(el=>{
+      const idx = Number(el.dataset.cardIdx);
+      el.classList.toggle('active', idx===index);
+    });
+    const a=zoomDotsEl.querySelector('.dot.active');
+    if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  }
+
+  function zoomNext(){
+    playSwipeSound('next');
+    const start=index; do{ index=(index+1)%cards.length; }while(cards[index].hidden && index!==start);
+    showCard(); renderZoomContent(); saveState();
+  }
+  function zoomPrev(){
+    playSwipeSound('prev');
+    const start=index; do{ index=(index-1+cards.length)%cards.length; }while(cards[index].hidden && index!==start);
+    showCard(); renderZoomContent(); saveState();
+  }
+
+  function openZoom(){
+    ensureZoomOverlay();
+    zoomFlipped = card.classList.contains('flipped');
+    renderZoomContent();
+    zoomOverlay.classList.add('open');
+    document.body.style.overflow='hidden';
+    // Try true fullscreen for mobile like reference
+    try {
+      if (zoomOverlay.requestFullscreen) zoomOverlay.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
+      else if (zoomOverlay.webkitRequestFullscreen) zoomOverlay.webkitRequestFullscreen();
+    } catch(e){}
+  }
+  function closeZoom(){
+    if(!zoomOverlay) return;
+    zoomOverlay.classList.remove('open');
+    if (!document.body.classList.contains('focus-mode')) document.body.style.overflow='';
+    try {
+      if (document.fullscreenElement === zoomOverlay || document.webkitFullscreenElement === zoomOverlay) {
+        if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+    } catch(e){}
+  }
+  function toggleZoom(){
+    ensureZoomOverlay();
+    if(zoomOverlay.classList.contains('open')) closeZoom(); else openZoom();
+  }
+
+
   let dragging = false, dx=0, dy=0;
   function startDrag(clientX, clientY){
     if (widget.style.transform && widget.style.transform !== 'none') {
@@ -1444,7 +1711,12 @@
   setOpacity(opacitySlider.value);
 
   window.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { if (!editor.classList.contains('hidden')) { cancelEdit.click(); return; } if (isFocused) { toggleFocusFit(); return; } }
+    if (e.key === 'Escape') { if(zoomOverlay && zoomOverlay.classList.contains('open')){ closeZoom(); return; } if (!editor.classList.contains('hidden')) { cancelEdit.click(); return; } if (isFocused) { toggleFocusFit(); return; } closeZoom(); return; }
+    if(zoomOverlay && zoomOverlay.classList.contains('open')){
+      if(e.key==='ArrowRight'){ zoomNext(); e.preventDefault(); return; }
+      if(e.key==='ArrowLeft'){ zoomPrev(); e.preventDefault(); return; }
+      if(e.key===' ' || e.key==='ArrowUp' || e.key==='ArrowDown'){ e.preventDefault(); zoomFlipped=!zoomFlipped; if(zoomCard) zoomCard.classList.toggle('flipped', zoomFlipped); if(zoomFlipped) card.classList.add('flipped'); else card.classList.remove('flipped'); return; }
+    }
     if (!editor.classList.contains('hidden')) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     switch(e.key) {
@@ -1453,6 +1725,7 @@
       case 'ArrowUp': case 'ArrowDown': case ' ': flip(); e.preventDefault(); break;
       case 'n': case 'N': addCard(); break;
       case 'e': case 'E': isNewCard = false; openEditor(); break;
+      case 'z': case 'Z': toggleZoom(); e.preventDefault(); break;
       case 'f': case 'F': if (!e.ctrlKey && !e.metaKey) { toggleFocusFit(); e.preventDefault(); } break;
       case 'h': case 'H': if(e.shiftKey){ openHiddenViewer(); } else { hideCurrentCard(); } e.preventDefault(); break;
       case 'u': case 'U': if(e.shiftKey) unhideAllCards(); break;
