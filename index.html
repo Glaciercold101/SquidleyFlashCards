@@ -377,9 +377,12 @@
   body.theme-blue .dot.active { background:#7eb8ff !important; box-shadow:0 0 12px rgba(126,184,255,0.75) !important; }
   body.theme-pink .dot.active { background:#ff7ac1 !important; box-shadow:0 0 12px rgba(255,122,193,0.75) !important; }
   body.theme-yellow .dot.active { background:#ffdd57 !important; box-shadow:0 0 12px rgba(255,221,87,0.75) !important; }
-  body.theme-blue .nav-arrow { border-color: rgba(126,184,255,0.3); }
-  body.theme-pink .nav-arrow { border-color: rgba(255,122,193,0.3); }
-  body.theme-yellow .nav-arrow { border-color: rgba(255,221,87,0.35); }
+  body.theme-blue .nav-arrow { display: none !important; /* removed per user */ }
+  .nav-arrow-removed { border-color: rgba(126,184,255,0.3); }
+  body.theme-pink .nav-arrow { display: none !important; /* removed per user */ }
+  .nav-arrow-removed { border-color: rgba(255,122,193,0.3); }
+  body.theme-yellow .nav-arrow { display: none !important; /* removed per user */ }
+  .nav-arrow-removed { border-color: rgba(255,221,87,0.35); }
   #themeSelect { min-width:72px; background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:7px; color:#fff; }
   body.theme-blue .face { background: rgba(18,32,62,0.22); }
   body.theme-pink .face { background: rgba(56,18,42,0.24); }
@@ -495,8 +498,6 @@
       <div class="hint">click to flip</div>
       <div id="dots" class="dots"></div>
       <div class="shortcuts-footer">Space flip • ← → navigate</div>
-      <button id="prevBtn" class="nav-arrow prev" aria-label="Previous" title="Previous">‹</button>
-      <button id="nextBtn" class="nav-arrow next" aria-label="Next" title="Next">›</button>
       <button id="hideCardBtn" class="hide-btn" title="Hide card (H)">🙈</button>
     </div>
     <div class="toast" id="toast"></div>
@@ -1195,8 +1196,8 @@
     const a=dotsEl.querySelector('.dot.active');
     if(a) a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
   }
-  const prevBtn=document.getElementById('prevBtn');
-  const nextBtn=document.getElementById('nextBtn');
+  const prevBtn=document.getElementById('prevBtn'); // removed
+  const nextBtn=document.getElementById('nextBtn'); // removed
   const _origNext=next, _origPrev=prev;
   function nextWithFx(){ playSwipeSound('next'); _origNext(); updateDots(); }
   function prevWithFx(){ playSwipeSound('prev'); _origPrev(); updateDots(); }
@@ -1244,72 +1245,139 @@
 
 
   
-  // --- Focus Fit Button Logic ---
+  // --- Focus Fit Button Logic - True Fullscreen like reference app ---
   let isFocused = false;
-  function toggleFocusFit() {
-    isFocused = !isFocused;
-    widget.classList.toggle('focused', isFocused);
+  let prevInlineStyles = null;
+
+  function isMobile() {
+    return window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  }
+
+  function enterFocusVisual() {
+    // Save inline styles for restore
+    prevInlineStyles = {
+      left: widget.style.left,
+      top: widget.style.top,
+      width: widget.style.width,
+      height: widget.style.height,
+      transform: widget.style.transform,
+      borderRadius: widget.style.borderRadius
+    };
+    isFocused = true;
+    widget.classList.add('focused');
+    document.body.classList.add('focus-mode');
+    document.body.style.overflow = 'hidden';
     const btn = document.getElementById('focusBtn');
     if (btn) {
-      btn.classList.toggle('active', isFocused);
-      btn.textContent = isFocused ? '⛶ Exit' : '⛶ Focus';
-      btn.title = isFocused ? 'Exit fit-to-screen' : 'Fit app to screen';
+      btn.classList.add('active');
+      btn.textContent = '🗗 Exit';
+      btn.title = 'Exit fullscreen';
     }
-    if (isFocused) {
-      // Store previous inline position for restore via saveState? keep simple, just expand
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      // Restore centering if it was centered via transform
-      // Let saveState handle position, but if inline top/left were overwritten, reset to centered default for desktop
-      if (window.innerWidth > 768) {
-        // If user had no saved position, centering will be via CSS; clear inline to allow centering
-        // Only clear if it was set to 0 by focus
-        if (widget.style.left === '0px' || widget.style.top === '0px') {
-          // Try to restore from saved state or default center
-          try {
-            const raw = localStorage.getItem('squidley_fc_state_v2');
-            if (raw) {
-              const s = JSON.parse(raw);
-              if (s.left && s.top) {
-                widget.style.left = s.left;
-                widget.style.top = s.top;
-                widget.style.width = s.width || '';
-                widget.style.height = s.height || '';
-                widget.style.transform = s.left === '50%' ? 'translate(-50%, -50%)' : 'none';
-              } else {
-                widget.style.left = '';
-                widget.style.top = '';
-                widget.style.width = '';
-                widget.style.height = '';
-                widget.style.transform = '';
-              }
-            } else {
-              widget.style.left = '';
-              widget.style.top = '';
-              widget.style.width = '';
-              widget.style.height = '';
-              widget.style.transform = '';
-            }
-          } catch(e) {
+    // On mobile, hide address bar by scrolling slightly
+    if (isMobile()) {
+      setTimeout(() => window.scrollTo(0,1), 100);
+    }
+  }
+
+  function exitFocusVisual() {
+    isFocused = false;
+    widget.classList.remove('focused');
+    document.body.classList.remove('focus-mode');
+    document.body.style.overflow = '';
+    const btn = document.getElementById('focusBtn');
+    if (btn) {
+      btn.classList.remove('active');
+      btn.textContent = '⛶ Focus';
+      btn.title = 'Fit app to screen - fullscreen';
+    }
+    // Restore inline styles if we have them, otherwise clear to let autoFit work
+    if (prevInlineStyles) {
+      // For desktop, restore saved position from localStorage if available
+      try {
+        const raw = localStorage.getItem('squidley_fc_state_v2');
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s.left && s.top) {
+            widget.style.left = s.left;
+            widget.style.top = s.top;
+            widget.style.width = s.width || '';
+            widget.style.height = s.height || '';
+            widget.style.transform = s.left === '50%' ? 'translate(-50%, -50%)' : 'none';
+          } else {
             widget.style.left = '';
             widget.style.top = '';
             widget.style.width = '';
             widget.style.height = '';
             widget.style.transform = '';
           }
+        } else {
+          widget.style.left = prevInlineStyles.left;
+          widget.style.top = prevInlineStyles.top;
+          widget.style.width = prevInlineStyles.width;
+          widget.style.height = prevInlineStyles.height;
+          widget.style.transform = prevInlineStyles.transform;
         }
-      } else {
-        // mobile default
+      } catch(e) {
         widget.style.left = '';
         widget.style.top = '';
         widget.style.width = '';
         widget.style.height = '';
         widget.style.transform = '';
       }
+      prevInlineStyles = null;
+    } else {
+      widget.style.left = '';
+      widget.style.top = '';
+      widget.style.width = '';
+      widget.style.height = '';
+      widget.style.transform = '';
     }
-    try { if (typeof saveState === 'function' && !isFocused) saveState(); } catch(e){}
+    // Re-fit to content after exit
+    setTimeout(() => { if (typeof autoFitToContent === 'function') autoFitToContent(); }, 80);
+    try { if (typeof saveState === 'function') saveState(); } catch(e){}
   }
+
+  async function toggleFocusFit() {
+    if (!isFocused) {
+      enterFocusVisual();
+      // Try true fullscreen like reference app
+      try {
+        const el = widget;
+        if (el.requestFullscreen) {
+          await el.requestFullscreen({navigationUI: 'hide'});
+        } else if (el.webkitRequestFullscreen) {
+          await el.webkitRequestFullscreen();
+        } else if (document.documentElement.requestFullscreen) {
+          // Fallback: fullscreen the whole document
+          await document.documentElement.requestFullscreen({navigationUI: 'hide'});
+        }
+      } catch(err) {
+        // Fullscreen may fail on iOS or without user gesture, CSS focused still works
+        console.log('Fullscreen API fallback to CSS', err);
+      }
+    } else {
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) await document.exitFullscreen();
+          else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+        }
+      } catch(err) {}
+      exitFocusVisual();
+    }
+  }
+
+  // Sync when user exits fullscreen via Esc or system gesture
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && isFocused) {
+      // User pressed Esc
+      exitFocusVisual();
+    }
+  });
+  document.addEventListener('webkitfullscreenchange', () => {
+    if (!document.webkitFullscreenElement && isFocused) {
+      exitFocusVisual();
+    }
+  });
   
   let dragging = false, dx=0, dy=0;
   function startDrag(clientX, clientY){
